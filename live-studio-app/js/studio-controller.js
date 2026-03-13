@@ -32,6 +32,7 @@ import {
   setParticipants,
   setStageOrder as setParticipantsStageOrder,
   renderBackstageList,
+  renderBackstageStrip,
   getOnStageParticipants
 } from './participants.js';
 import { initChat, startChat, setLocalName } from './chat.js';
@@ -81,15 +82,17 @@ async function main() {
   getEl('connection-status').textContent = 'Connecting…';
 
   function attachBackstageStreams() {
-    const list = getEl('backstage-list');
-    if (!list) return;
-    list.querySelectorAll('[data-remote-preview]').forEach((video) => {
-      const userId = video.getAttribute('data-remote-preview');
-      const stream = remoteStreams.get(userId);
-      if (stream) {
-        video.srcObject = stream;
-        video.muted = true;
-      }
+    const containers = [getEl('backstage-list'), getEl('backstage-strip')];
+    containers.forEach((el) => {
+      if (!el) return;
+      el.querySelectorAll('[data-remote-preview]').forEach((video) => {
+        const userId = video.getAttribute('data-remote-preview');
+        const stream = remoteStreams.get(userId);
+        if (stream) {
+          video.srcObject = stream;
+          video.muted = true;
+        }
+      });
     });
   }
 
@@ -155,6 +158,7 @@ async function main() {
     setParticipants(list);
     setParticipantsStageOrder(roomData.stageOrder || []);
     renderBackstageList(getEl('backstage-list'), (uid) => createOfferFor(uid));
+    renderBackstageStrip(getEl('backstage-strip'));
 
     const onStageCount = list.filter((p) => p.status === 'on_stage').length;
     const autoLayout = onStageCount <= 1 ? 1 : onStageCount <= 2 ? 2 : onStageCount <= 3 ? 3 : onStageCount <= 4 ? 4 : onStageCount <= 6 ? 6 : onStageCount <= 9 ? 9 : 12;

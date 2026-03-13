@@ -25,8 +25,9 @@
   </header>
 
   <div class="studio-body">
-    <!-- Live Stage Canvas -->
+    <!-- Main area: Program (top) + Backstage strip (bottom) -->
     <section class="stage-section">
+      <div class="stage-label">In diretta / Programma</div>
       <div class="stage-canvas" id="stage-canvas">
         <div class="video-grid" id="video-grid" data-layout="1">
           <!-- Video slots filled by JS -->
@@ -36,12 +37,16 @@
           <span class="screen-share-label">Screen share</span>
         </div>
       </div>
+      <div class="backstage-strip-label">Backstage — in attesa</div>
+      <div class="backstage-strip" id="backstage-strip">
+        <!-- Backstage cams in live, filled by JS -->
+      </div>
     </section>
 
-    <!-- Panels: Backstage | Chat | Layout -->
+    <!-- Regia: Backstage list | Chat | Layout | Impostazioni -->
     <aside class="studio-panels">
       <div class="panel-tabs" id="panel-tabs">
-        <button class="panel-tab active" data-panel="backstage">Backstage</button>
+        <button class="panel-tab active" data-panel="backstage">Regia</button>
         <button class="panel-tab" data-panel="chat">Chat</button>
         <button class="panel-tab" data-panel="layout">Layout</button>
         <button class="panel-tab" data-panel="settings">Impostazioni</button>

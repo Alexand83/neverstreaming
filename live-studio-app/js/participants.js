@@ -59,6 +59,19 @@ function renderBackstageList(container, webrtcCreateOffer) {
   });
 }
 
+function renderBackstageStrip(container) {
+  if (!container) return;
+  const backstage = participantsList.filter((p) => p.status === 'backstage' && p.id !== localUserId);
+  container.innerHTML = backstage.length
+    ? backstage.map((p) => `
+        <div class="backstage-strip-item" data-user-id="${p.id}">
+          <video autoplay playsinline muted data-remote-preview="${p.id}"></video>
+          <span class="strip-name">${escapeHtml(p.name || 'Guest')}</span>
+        </div>
+      `).join('')
+    : '<div class="backstage-strip-empty">Nessuno in backstage</div>';
+}
+
 function escapeHtml(s) {
   const div = document.createElement('div');
   div.textContent = s;
@@ -107,6 +120,7 @@ export {
   setParticipants,
   setStageOrder,
   renderBackstageList,
+  renderBackstageStrip,
   addToStage,
   removeFromStage,
   removeFromRoom,
