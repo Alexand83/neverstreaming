@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://Alexand83.github.io/neverstreaming/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio - Live Studio</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/studio.css">
+</head>
+<body class="studio-page">
+  <header class="studio-header">
+    <div class="studio-header-left">
+      <span class="studio-logo">Live Studio</span>
+      <span class="room-badge" id="room-badge">—</span>
+      <span class="connection-status" id="connection-status">Connecting…</span>
+    </div>
+    <div class="studio-header-right">
+      <button id="btn-scenes" class="btn btn-ghost" title="Scenes">Scenes</button>
+      <button id="btn-layouts" class="btn btn-ghost" title="Layouts">Layouts</button>
+      <button id="btn-end-call" class="btn btn-danger">End session</button>
+    </div>
+  </header>
+
+  <div class="studio-body">
+    <!-- Live Stage Canvas -->
+    <section class="stage-section">
+      <div class="stage-canvas" id="stage-canvas">
+        <div class="video-grid" id="video-grid" data-layout="1">
+          <!-- Video slots filled by JS -->
+        </div>
+        <div class="screen-share-overlay hidden" id="screen-share-overlay">
+          <video id="screen-share-video" autoplay playsinline></video>
+          <span class="screen-share-label">Screen share</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panels: Backstage | Chat | Layout -->
+    <aside class="studio-panels">
+      <div class="panel-tabs">
+        <button class="panel-tab active" data-panel="backstage">Backstage</button>
+        <button class="panel-tab" data-panel="chat">Chat</button>
+        <button class="panel-tab" data-panel="layout">Layout</button>
+      </div>
+      <div class="panel-content">
+        <div class="panel active" id="panel-backstage">
+          <div class="backstage-list" id="backstage-list"></div>
+        </div>
+        <div class="panel" id="panel-chat">
+          <div class="chat-container" id="chat-container">
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-input" placeholder="Type a message…">
+              <button id="btn-send-chat" class="btn btn-small">Send</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel" id="panel-layout">
+          <div class="layout-tools" id="layout-tools">
+            <h4>Layout preset</h4>
+            <div class="layout-presets" id="layout-presets"></div>
+            <h4>Scenes</h4>
+            <div class="scene-buttons" id="scene-buttons"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Local controls (camera, mic, screen share, record, virtual background) -->
+  <footer class="studio-footer">
+    <div class="local-controls">
+      <button id="btn-toggle-cam" class="control-btn" title="Camera">📷</button>
+      <button id="btn-toggle-mic" class="control-btn" title="Microphone">🎤</button>
+      <button id="btn-screen-share" class="control-btn" title="Share screen">🖥️</button>
+      <button id="btn-record" class="control-btn" title="Record">⏺ Record</button>
+      <div class="vb-control">
+        <label for="vb-select" class="vb-label">Background</label>
+        <select id="vb-select" class="vb-select" title="Virtual background">
+          <option value="none">None</option>
+          <option value="blur">Blur</option>
+          <option value="image">Custom image…</option>
+        </select>
+        <input type="file" id="vb-file" accept="image/*" class="hidden">
+      </div>
+    </div>
+    <div class="quality-indicator" id="quality-indicator">—</div>
+  </footer>
+
+  <!-- Scenes dropdown -->
+  <div class="dropdown hidden" id="scenes-dropdown">
+    <div class="scene-options" id="scene-options"></div>
+  </div>
+
+  <script src="firebase/config.js"></script>
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/webrtc.js"></script>
+  <script type="module" src="js/participants.js"></script>
+  <script type="module" src="js/chat.js"></script>
+  <script type="module" src="js/screen-share.js"></script>
+  <script type="module" src="js/drag-layout.js"></script>
+  <script type="module" src="js/recording.js"></script>
+  <script type="module" src="js/virtual-background.js"></script>
+  <script type="module" src="js/studio-controller.js"></script>
+</body>
+</html>
