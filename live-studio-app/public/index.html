@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Studio - Stream Like a Pro</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/layout.css">
+</head>
+<body class="landing-page">
+  <header class="hero-header">
+    <div class="logo">
+      <span class="logo-icon">▶</span>
+      <h1>Live Studio</h1>
+      <p class="tagline">Browser-based live production for streamers</p>
+    </div>
+  </header>
+
+  <main class="landing-main">
+    <section class="cta-section">
+      <div class="cta-card create-room">
+        <h2>Create a Studio</h2>
+        <p>Start a new live session. Share the link with guests.</p>
+        <button id="btn-create-room" class="btn btn-primary btn-lg">Create Studio Room</button>
+      </div>
+      <div class="cta-card join-room">
+        <h2>Join as Guest</h2>
+        <p>Have a room link? Join as a guest or co-host.</p>
+        <a href="join.html" class="btn btn-secondary btn-lg">Join Room</a>
+      </div>
+    </section>
+
+    <section class="room-link-section hidden" id="room-link-section">
+      <div class="room-link-card">
+        <h3>Your studio is ready</h3>
+        <p>Share this link with guests:</p>
+        <div class="room-link-box">
+          <input type="text" id="room-link-input" readonly>
+          <button id="btn-copy-link" class="btn btn-small">Copy</button>
+        </div>
+        <a id="btn-enter-studio" href="#" class="btn btn-primary">Enter Studio</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="landing-footer">
+    <p>Live Studio — OBS + Zoom + StreamYard in one. WebRTC • Firebase</p>
+  </footer>
+
+  <script src="../firebase/config.js"></script>
+  <script type="module" src="../js/firebase.js"></script>
+  <script type="module" src="../js/app.js"></script>
+</body>
+</html>
