@@ -84,11 +84,16 @@ function createPeerConnection(remoteId, isInitiator) {
 }
 
 async function handleOffer(remoteId, offer) {
+  if (!offer || offer.type !== 'offer' || typeof offer.sdp !== 'string') return;
   let pc = peers.get(remoteId);
-  if (pc && pc.signalingState !== 'stable') return;
+  if (pc) {
+    if (pc.signalingState !== 'stable') return;
+    if (pc.connectionState === 'connected' || pc.connectionState === 'connecting') return;
+  }
   if (!pc) pc = createPeerConnection(remoteId, false);
   try {
     await pc.setRemoteDescription(new RTCSessionDescription(offer));
+    if (pc.signalingState !== 'have-remote-offer') return;
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
     if (sendSignaling) sendSignaling(remoteId, 'answer', answer);
