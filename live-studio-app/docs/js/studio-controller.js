@@ -80,6 +80,19 @@ async function main() {
 
   getEl('room-badge').textContent = roomId;
   getEl('connection-status').textContent = 'Connecting…';
+  if (isHost) document.body.classList.add('is-host');
+  getEl('footer-nickname-value').textContent = localName || 'Guest';
+
+  function updateGuestWaitingBanner() {
+    const me = participantsList.find((p) => p.id === localUserId);
+    const banner = getEl('guest-waiting-banner');
+    if (!banner) return;
+    if (!isHost && me && me.status === 'backstage') {
+      banner.classList.remove('hidden');
+    } else {
+      banner.classList.add('hidden');
+    }
+  }
 
   function attachBackstageStreams() {
     const containers = [getEl('backstage-list'), getEl('backstage-strip')];
@@ -157,8 +170,11 @@ async function main() {
     participantsList = list;
     setParticipants(list);
     setParticipantsStageOrder(roomData.stageOrder || []);
-    renderBackstageList(getEl('backstage-list'), (uid) => createOfferFor(uid));
+    if (isHost) {
+      renderBackstageList(getEl('backstage-list'), (uid) => createOfferFor(uid));
+    }
     renderBackstageStrip(getEl('backstage-strip'));
+    updateGuestWaitingBanner();
 
     const onStageCount = list.filter((p) => p.status === 'on_stage').length;
     const autoLayout = onStageCount <= 1 ? 1 : onStageCount <= 2 ? 2 : onStageCount <= 3 ? 3 : onStageCount <= 4 ? 4 : onStageCount <= 6 ? 6 : onStageCount <= 9 ? 9 : 12;
@@ -185,6 +201,15 @@ async function main() {
     refreshVideoGrid();
     attachBackstageStreams();
   });
+
+  if (!isHost) {
+    getEl('panel-tabs').querySelectorAll('.panel-tab').forEach((t) => t.classList.remove('active'));
+    getEl('panel-content').querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+    const chatTab = getEl('panel-tabs').querySelector('[data-panel="chat"]');
+    const chatPanel = getEl('panel-chat');
+    if (chatTab) chatTab.classList.add('active');
+    if (chatPanel) chatPanel.classList.add('active');
+  }
 
   initParticipants({ roomId, localUserId, isHost });
   initDragLayout({
@@ -238,44 +263,52 @@ async function main() {
     }
   });
 
-  getEl('vb-select').addEventListener('change', async (e) => {
-    const value = e.target.value;
+  function applyVbFromSidebar(value, imageUrl) {
     const localStreamRef = getLocalStreamRef();
     if (!localStreamRef) return;
     if (value === 'none') {
-      await virtualBackground.stop();
-      const orig = getLocalVideoTrack();
-      if (orig) replaceTrack('video', orig);
-      getEl('vb-file').value = '';
+      virtualBackground.stop().then(() => {
+        const orig = getLocalVideoTrack();
+        if (orig) replaceTrack('video', orig);
+      });
       return;
     }
     if (value === 'blur') {
       virtualBackground.setInputStream(localStreamRef);
-      const out = await virtualBackground.setMode('blur');
-      if (out) {
-        const track = virtualBackground.getOutputVideoTrack();
-        if (track) replaceTrack('video', track);
-      }
+      virtualBackground.setMode('blur').then((out) => {
+        if (out) {
+          const track = virtualBackground.getOutputVideoTrack();
+          if (track) replaceTrack('video', track);
+        }
+      });
       return;
     }
+    if (value === 'image' && imageUrl) {
+      virtualBackground.setInputStream(localStreamRef);
+      virtualBackground.setMode('image', { imageUrl }).then((out) => {
+        if (out) {
+          const track = virtualBackground.getOutputVideoTrack();
+          if (track) replaceTrack('video', track);
+        }
+      });
+    }
+  }
+
+  getEl('vb-select-sidebar').addEventListener('change', async (e) => {
+    const value = e.target.value;
     if (value === 'image') {
-      getEl('vb-file').click();
+      getEl('vb-file-sidebar').click();
+    } else {
+      applyVbFromSidebar(value);
     }
   });
 
-  getEl('vb-file').addEventListener('change', async (e) => {
+  getEl('vb-file-sidebar').addEventListener('change', async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const localStreamRef = getLocalStreamRef();
-    if (!localStreamRef) return;
     const imageUrl = URL.createObjectURL(file);
-    virtualBackground.setInputStream(localStreamRef);
-    const out = await virtualBackground.setMode('image', { imageUrl });
-    if (out) {
-      const track = virtualBackground.getOutputVideoTrack();
-      if (track) replaceTrack('video', track);
-    }
-    getEl('vb-select').value = 'image';
+    applyVbFromSidebar('image', imageUrl);
+    getEl('vb-select-sidebar').value = 'image';
   });
 
   async function populateSettingsPanel() {
@@ -302,17 +335,42 @@ async function main() {
     const tab = e.target.closest('.panel-tab');
     if (!tab) return;
     const panelId = tab.dataset.panel;
-    if (panelId === 'settings') populateSettingsPanel();
+    getEl('panel-tabs').querySelectorAll('.panel-tab').forEach((t) => t.classList.remove('active'));
+    getEl('panel-content').querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+    tab.classList.add('active');
+    const panel = document.getElementById('panel-' + panelId);
+    if (panel) panel.classList.add('active');
   });
+
+  const sidebar = getEl('settings-sidebar');
+  getEl('btn-settings').addEventListener('click', () => {
+    sidebar.classList.remove('hidden');
+    populateSettingsPanel();
+  });
+  getEl('settings-close').addEventListener('click', () => sidebar.classList.add('hidden'));
+
+  getEl('footer-nickname').addEventListener('click', () => {
+    sidebar.classList.remove('hidden');
+    populateSettingsPanel();
+    const nickEl = getEl('settings-nickname');
+    if (nickEl) { nickEl.focus(); nickEl.select(); }
+  });
+
+  function updateFooterNickname() {
+    const el = getEl('footer-nickname-value');
+    if (el) el.textContent = localName || 'Guest';
+  }
 
   getEl('settings-apply').addEventListener('click', async () => {
     const nickEl = getEl('settings-nickname');
     const camEl = getEl('settings-camera');
     const micEl = getEl('settings-microphone');
+    const vbSelect = getEl('vb-select-sidebar');
     const newName = (nickEl && nickEl.value || '').trim().slice(0, 32) || 'Guest';
     if (newName !== localName) {
       localName = newName;
       setLocalName(newName);
+      updateFooterNickname();
       await setParticipant(roomId, localUserId, { name: newName });
     }
     const cameraId = (camEl && camEl.value) || null;
@@ -321,19 +379,21 @@ async function main() {
       const stream = await getLocalStream(cameraId, microphoneId);
       replaceTrack('video', stream.getVideoTracks()[0]);
       replaceTrack('audio', stream.getAudioTracks()[0]);
-      const vbSelect = getEl('vb-select');
       if (vbSelect && vbSelect.value !== 'none') {
         virtualBackground.setInputStream(stream);
         const mode = vbSelect.value;
-        const out = mode === 'blur' ? await virtualBackground.setMode('blur') : null;
-        if (out && mode === 'blur') {
-          const track = virtualBackground.getOutputVideoTrack();
-          if (track) replaceTrack('video', track);
+        if (mode === 'blur') {
+          const out = await virtualBackground.setMode('blur');
+          if (out) {
+            const track = virtualBackground.getOutputVideoTrack();
+            if (track) replaceTrack('video', track);
+          }
         }
       }
     } catch (err) {
       console.warn('Impostazioni dispositivi:', err);
     }
+    sidebar.classList.add('hidden');
   });
 
   const layoutPresets = getEl('layout-presets');
@@ -360,17 +420,6 @@ async function main() {
     });
   }
   renderSceneButtons();
-
-  getEl('panel-tabs').addEventListener('click', (e) => {
-    const tab = e.target.closest('.panel-tab');
-    if (!tab) return;
-    const panelId = tab.dataset.panel;
-    getEl('panel-tabs').querySelectorAll('.panel-tab').forEach((t) => t.classList.remove('active'));
-    getEl('panel-content').querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
-    tab.classList.add('active');
-    const panel = document.getElementById('panel-' + panelId);
-    if (panel) panel.classList.add('active');
-  });
 
   getEl('btn-end-call').addEventListener('click', () => {
     setParticipant(roomId, localUserId, { status: 'left' });

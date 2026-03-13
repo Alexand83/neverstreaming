@@ -57,18 +57,40 @@ function renderBackstageList(container, webrtcCreateOffer) {
       removeFromRoom(uid);
     });
   });
+
+  if (isHost) {
+    container.querySelectorAll('.backstage-item .name').forEach((el) => {
+      el.style.cursor = 'pointer';
+      el.title = 'Modifica nickname';
+      el.addEventListener('click', async () => {
+        const item = el.closest('.backstage-item');
+        if (!item) return;
+        const uid = item.dataset.userId;
+        const current = el.textContent || '';
+        const next = prompt('Nuovo nickname per questo ospite:', current);
+        if (!next) return;
+        const trimmed = next.trim().slice(0, 32);
+        if (!trimmed || trimmed === current) return;
+        await setParticipant(roomId, uid, { name: trimmed });
+      });
+    });
+  }
 }
 
 function renderBackstageStrip(container) {
   if (!container) return;
-  const backstage = participantsList.filter((p) => p.status === 'backstage' && p.id !== localUserId);
+  const backstage = participantsList.filter((p) => p.status === 'backstage');
   container.innerHTML = backstage.length
-    ? backstage.map((p) => `
+    ? backstage.map((p) => {
+        const isLocal = p.id === localUserId;
+        const videoAttr = isLocal ? 'data-local-preview="1"' : `data-remote-preview="${p.id}"`;
+        return `
         <div class="backstage-strip-item" data-user-id="${p.id}">
-          <video autoplay playsinline muted data-remote-preview="${p.id}"></video>
+          <video autoplay playsinline muted ${videoAttr}></video>
           <span class="strip-name">${escapeHtml(p.name || 'Guest')}</span>
         </div>
-      `).join('')
+      `;
+      }).join('')
     : '<div class="backstage-strip-empty">Nessuno in backstage</div>';
 }
 

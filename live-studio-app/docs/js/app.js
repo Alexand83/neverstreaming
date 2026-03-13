@@ -8,34 +8,43 @@ const page = document.body.classList.contains('landing-page') ? 'landing' : 'joi
 if (page === 'landing') {
   const btnCreate = document.getElementById('btn-create-room');
   const roomLinkSection = document.getElementById('room-link-section');
-  const roomLinkInput = document.getElementById('room-link-input');
-  const btnCopy = document.getElementById('btn-copy-link');
+  const roomLinkGuest = document.getElementById('room-link-guest');
+  const roomLinkRegia = document.getElementById('room-link-regia');
+  const btnCopyGuest = document.getElementById('btn-copy-guest');
+  const btnCopyRegia = document.getElementById('btn-copy-regia');
   const btnEnter = document.getElementById('btn-enter-studio');
 
   btnCreate.addEventListener('click', async () => {
     btnCreate.disabled = true;
-    btnCreate.textContent = 'Creating…';
+    btnCreate.textContent = 'Creazione…';
     try {
       const uid = await ensureAuth();
       if (!uid) throw new Error('Auth failed');
       const roomId = await createRoom(uid);
-      const url = `${location.origin}${location.pathname.replace('index.html', '')}studio.html?room=${roomId}`;
-      roomLinkInput.value = url;
+      const base = `${location.origin}${location.pathname.replace('index.html', '')}`;
+      roomLinkGuest.value = `${base}join.html?room=${roomId}`;
+      roomLinkRegia.value = `${base}studio.html?room=${roomId}&host=1`;
       roomLinkSection.classList.remove('hidden');
       btnEnter.href = `studio.html?room=${roomId}&host=1`;
     } catch (e) {
       console.error(e);
-      btnCreate.textContent = 'Error – try again';
+      btnCreate.textContent = 'Riprova';
     } finally {
       btnCreate.disabled = false;
     }
   });
 
-  btnCopy.addEventListener('click', () => {
-    roomLinkInput.select();
+  btnCopyGuest.addEventListener('click', () => {
+    roomLinkGuest.select();
     document.execCommand('copy');
-    btnCopy.textContent = 'Copied!';
-    setTimeout(() => { btnCopy.textContent = 'Copy'; }, 2000);
+    btnCopyGuest.textContent = 'Copiato!';
+    setTimeout(() => { btnCopyGuest.textContent = 'Copia'; }, 2000);
+  });
+  btnCopyRegia.addEventListener('click', () => {
+    roomLinkRegia.select();
+    document.execCommand('copy');
+    btnCopyRegia.textContent = 'Copiato!';
+    setTimeout(() => { btnCopyRegia.textContent = 'Copia'; }, 2000);
   });
 }
 
@@ -51,10 +60,15 @@ if (page === 'join') {
 
   function parseRoomId(value) {
     const v = (value || '').trim();
-    const match = v.match(/studio\.html\?room=([A-Za-z0-9]+)/);
+    const match = v.match(/(?:studio|join)\.html\?room=([A-Za-z0-9]+)/);
     if (match) return match[1];
     if (/^[A-Za-z0-9]{4,10}$/.test(v)) return v;
     return null;
+  }
+
+  const urlRoom = new URLSearchParams(location.search).get('room');
+  if (urlRoom) {
+    roomIdInput.value = urlRoom;
   }
 
   btnContinue.addEventListener('click', async () => {

@@ -58,6 +58,7 @@
   display: grid;
   grid-template-columns: 1fr 320px;
   min-height: 0;
+  position: relative;
 }
 
 .stage-section {
@@ -593,6 +594,42 @@
 .footer-nickname-value {
   font-weight: 500;
   color: var(--text);
+}
+
+/* Left professional toolbar */
+.studio-left-rail {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding-left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.studio-left-rail .rail-btn {
+  pointer-events: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.studio-left-rail .rail-btn:hover {
+  background: var(--border);
+  border-color: var(--accent);
+  transform: translateX(2px);
 }
 
 /* Footer controls */

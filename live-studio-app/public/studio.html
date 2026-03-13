@@ -24,6 +24,9 @@
   </header>
 
   <div class="studio-body">
+    <div class="studio-left-rail">
+      <button id="btn-settings" class="rail-btn" title="Impostazioni">⚙️</button>
+    </div>
     <!-- Main area: Program (top) + Backstage strip (bottom) -->
     <section class="stage-section">
       <div class="guest-waiting-banner hidden" id="guest-waiting-banner">
@@ -90,17 +93,17 @@
         </section>
         <section class="settings-category">
           <h4>Cam e video</h4>
-          <label>Webcam</label>
+          <label for="settings-camera">Webcam</label>
           <select id="settings-camera"></select>
-          <label>Microfono</label>
+          <label for="settings-microphone">Microfono</label>
           <select id="settings-microphone"></select>
-          <label>Sfondo</label>
-          <select id="vb-select-sidebar">
+          <label for="vb-select-sidebar">Sfondo</label>
+          <select id="vb-select-sidebar" title="Impostazioni sfondo video">
             <option value="none">Nessuno</option>
             <option value="blur">Sfocato</option>
             <option value="image">Immagine…</option>
           </select>
-          <input type="file" id="vb-file-sidebar" accept="image/*" class="hidden">
+          <input type="file" id="vb-file-sidebar" accept="image/*" class="hidden" title="Carica immagine di sfondo">
           <p class="settings-hint">Usa cuffie per ridurre l’eco.</p>
         </section>
         <section class="settings-category">
@@ -119,7 +122,6 @@
       <button id="btn-toggle-mic" class="control-btn" title="Microfono">🎤</button>
       <button id="btn-screen-share" class="control-btn" title="Condividi schermo">🖥️</button>
       <button id="btn-record" class="control-btn host-only" title="Registra">⏺</button>
-      <button id="btn-settings" class="control-btn" title="Impostazioni">⚙️</button>
     </div>
     <div class="footer-nickname" id="footer-nickname" title="Clicca per modificare">
       <span class="footer-nickname-label">Tu:</span>
