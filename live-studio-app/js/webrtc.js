@@ -60,7 +60,12 @@ function createPeerConnection(remoteId, isInitiator) {
 
   pc.onicecandidate = (e) => {
     if (e.candidate && sendSignaling) {
-      sendSignaling(remoteId, 'ice', e.candidate);
+      const c = e.candidate;
+      sendSignaling(remoteId, 'ice', {
+        candidate: c.candidate,
+        sdpMid: c.sdpMid ?? null,
+        sdpMLineIndex: c.sdpMLineIndex ?? null
+      });
     }
   };
 
@@ -79,28 +84,58 @@ function createPeerConnection(remoteId, isInitiator) {
 }
 
 async function handleOffer(remoteId, offer) {
-  const pc = createPeerConnection(remoteId, false);
-  await pc.setRemoteDescription(new RTCSessionDescription(offer));
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-  if (sendSignaling) sendSignaling(remoteId, 'answer', answer);
+  let pc = peers.get(remoteId);
+  if (pc && pc.signalingState !== 'stable') return;
+  if (!pc) pc = createPeerConnection(remoteId, false);
+  try {
+    await pc.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    if (sendSignaling) sendSignaling(remoteId, 'answer', answer);
+  } catch (err) {
+    console.warn('handleOffer failed:', err);
+  }
 }
 
 async function handleAnswer(remoteId, answer) {
   const pc = peers.get(remoteId);
-  if (pc) await pc.setRemoteDescription(new RTCSessionDescription(answer));
+  if (!pc || pc.signalingState !== 'have-local-offer') return;
+  try {
+    await pc.setRemoteDescription(new RTCSessionDescription(answer));
+  } catch (err) {
+    console.warn('handleAnswer failed:', err);
+  }
 }
 
-async function handleIce(remoteId, candidate) {
+async function handleIce(remoteId, payload) {
   const pc = peers.get(remoteId);
-  if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate));
+  if (!pc) return;
+  const c = payload && typeof payload.candidate === 'string'
+    ? payload
+    : { candidate: '', sdpMid: null, sdpMLineIndex: null };
+  try {
+    await pc.addIceCandidate(new RTCIceCandidate(c));
+  } catch (err) {
+    console.warn('addIceCandidate failed:', err);
+  }
+}
+
+function shouldInitiateConnection(localId, remoteId) {
+  return localId < remoteId;
 }
 
 async function createOfferFor(remoteId) {
-  const pc = createPeerConnection(remoteId, true);
-  const offer = await pc.createOffer(offerOptions);
-  await pc.setLocalDescription(offer);
-  if (sendSignaling) sendSignaling(remoteId, 'offer', offer);
+  if (!shouldInitiateConnection(localUserId, remoteId)) return;
+  let pc = peers.get(remoteId);
+  if (pc && pc.signalingState !== 'stable') return;
+  if (!pc) pc = createPeerConnection(remoteId, true);
+  try {
+    const offer = await pc.createOffer(offerOptions);
+    await pc.setLocalDescription(offer);
+    if (sendSignaling) sendSignaling(remoteId, 'offer', offer);
+  } catch (err) {
+    console.warn('createOffer failed:', err);
+  }
 }
 
 function removePeer(remoteId) {
