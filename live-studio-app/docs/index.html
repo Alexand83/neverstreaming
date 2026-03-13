@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="https://Alexand83.github.io/neverstreaming/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%96%B6</text></svg>">
   <title>Live Studio - Stream Like a Pro</title>
-  <link rel="stylesheet" href="../css/main.css">
-  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/layout.css">
 </head>
 <body class="landing-page">
   <header class="hero-header">
@@ -33,18 +34,13 @@
 
     <section class="room-link-section hidden" id="room-link-section">
       <div class="room-link-card">
-        <h3>Studio pronto</h3>
-        <p class="link-label">Link per <strong>ospiti</strong> (da condividere):</p>
+        <h3>Your studio is ready</h3>
+        <p>Share this link with guests:</p>
         <div class="room-link-box">
-          <input type="text" id="room-link-guest" readonly>
-          <button id="btn-copy-guest" class="btn btn-small">Copia</button>
+          <input type="text" id="room-link-input" readonly>
+          <button id="btn-copy-link" class="btn btn-small">Copy</button>
         </div>
-        <p class="link-label">Link <strong>regia</strong> (solo per te):</p>
-        <div class="room-link-box">
-          <input type="text" id="room-link-regia" readonly>
-          <button id="btn-copy-regia" class="btn btn-small">Copia</button>
-        </div>
-        <a id="btn-enter-studio" href="#" class="btn btn-primary">Entra in regia</a>
+        <a id="btn-enter-studio" href="#" class="btn btn-primary">Enter Studio</a>
       </div>
     </section>
   </main>
@@ -53,8 +49,8 @@
     <p>Live Studio — OBS + Zoom + StreamYard in one. WebRTC • Firebase</p>
   </footer>
 
-  <script src="../firebase/config.js"></script>
-  <script type="module" src="../js/firebase.js"></script>
-  <script type="module" src="../js/app.js"></script>
+  <script src="firebase/config.js"></script>
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

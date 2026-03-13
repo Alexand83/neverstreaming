@@ -26,6 +26,10 @@
   <div class="studio-body">
     <!-- Main area: Program (top) + Backstage strip (bottom) -->
     <section class="stage-section">
+      <div class="guest-waiting-banner hidden" id="guest-waiting-banner">
+        <span class="guest-waiting-icon">⏳</span>
+        <p>In attesa: l'host ti inserirà nella chiamata quando è pronto.</p>
+      </div>
       <div class="stage-label">In diretta / Programma</div>
       <div class="stage-canvas" id="stage-canvas">
         <div class="video-grid" id="video-grid" data-layout="1">
@@ -42,13 +46,12 @@
       </div>
     </section>
 
-    <!-- Regia: Backstage list | Chat | Layout | Impostazioni -->
-    <aside class="studio-panels">
+    <!-- Regia (solo host) | Chat | Layout -->
+    <aside class="studio-panels" id="studio-panels">
       <div class="panel-tabs" id="panel-tabs">
-        <button class="panel-tab active" data-panel="backstage">Regia</button>
+        <button class="panel-tab host-only" data-panel="backstage">Regia</button>
         <button class="panel-tab" data-panel="chat">Chat</button>
-        <button class="panel-tab" data-panel="layout">Layout</button>
-        <button class="panel-tab" data-panel="settings">Impostazioni</button>
+        <button class="panel-tab host-only" data-panel="layout">Layout</button>
       </div>
       <div class="panel-content" id="panel-content">
         <div class="panel active" id="panel-backstage">
@@ -58,51 +61,69 @@
           <div class="chat-container" id="chat-container">
             <div class="chat-messages" id="chat-messages"></div>
             <div class="chat-input-row">
-              <input type="text" id="chat-input" placeholder="Type a message…">
-              <button id="btn-send-chat" class="btn btn-small">Send</button>
+              <input type="text" id="chat-input" placeholder="Scrivi un messaggio…">
+              <button id="btn-send-chat" class="btn btn-small">Invia</button>
             </div>
           </div>
         </div>
         <div class="panel" id="panel-layout">
           <div class="layout-tools" id="layout-tools">
-            <h4>Layout preset</h4>
+            <h4>Layout</h4>
             <div class="layout-presets" id="layout-presets"></div>
             <h4>Scenes</h4>
             <div class="scene-buttons" id="scene-buttons"></div>
           </div>
         </div>
-        <div class="panel" id="panel-settings">
-          <div class="settings-panel" id="settings-panel">
-            <h4>Nome (nickname)</h4>
-            <input type="text" id="settings-nickname" placeholder="Il tuo nome" maxlength="32">
-            <h4>Webcam</h4>
-            <select id="settings-camera"></select>
-            <h4>Microfono</h4>
-            <select id="settings-microphone"></select>
-            <p class="settings-hint">L’eco si riduce usando cuffie. Il browser applica già riduzione rumore/eco dove supportato.</p>
-            <button type="button" id="settings-apply" class="btn btn-primary">Applica</button>
-          </div>
-        </div>
       </div>
+    </aside>
+
+    <!-- Settings sidebar (slide-out) -->
+    <aside class="settings-sidebar hidden" id="settings-sidebar">
+      <div class="settings-sidebar-header">
+        <h3>Impostazioni</h3>
+        <button type="button" class="settings-close" id="settings-close" aria-label="Chiudi">×</button>
+      </div>
+      <div class="settings-categories">
+        <section class="settings-category">
+          <h4>Nickname</h4>
+          <input type="text" id="settings-nickname" placeholder="Il tuo nome" maxlength="32">
+        </section>
+        <section class="settings-category">
+          <h4>Cam e video</h4>
+          <label>Webcam</label>
+          <select id="settings-camera"></select>
+          <label>Microfono</label>
+          <select id="settings-microphone"></select>
+          <label>Sfondo</label>
+          <select id="vb-select-sidebar">
+            <option value="none">Nessuno</option>
+            <option value="blur">Sfocato</option>
+            <option value="image">Immagine…</option>
+          </select>
+          <input type="file" id="vb-file-sidebar" accept="image/*" class="hidden">
+          <p class="settings-hint">Usa cuffie per ridurre l’eco.</p>
+        </section>
+        <section class="settings-category">
+          <h4>Aspetto</h4>
+          <p class="settings-hint">Altre opzioni in arrivo.</p>
+        </section>
+      </div>
+      <button type="button" id="settings-apply" class="btn btn-primary settings-apply-btn">Applica</button>
     </aside>
   </div>
 
-  <!-- Local controls (camera, mic, screen share, record, virtual background) -->
+  <!-- Local controls + nickname (clickable) -->
   <footer class="studio-footer">
     <div class="local-controls">
       <button id="btn-toggle-cam" class="control-btn" title="Camera">📷</button>
-      <button id="btn-toggle-mic" class="control-btn" title="Microphone">🎤</button>
-      <button id="btn-screen-share" class="control-btn" title="Share screen">🖥️</button>
-      <button id="btn-record" class="control-btn" title="Record">⏺ Record</button>
-      <div class="vb-control">
-        <label for="vb-select" class="vb-label">Background</label>
-        <select id="vb-select" class="vb-select" title="Virtual background">
-          <option value="none">None</option>
-          <option value="blur">Blur</option>
-          <option value="image">Custom image…</option>
-        </select>
-        <input type="file" id="vb-file" accept="image/*" class="hidden">
-      </div>
+      <button id="btn-toggle-mic" class="control-btn" title="Microfono">🎤</button>
+      <button id="btn-screen-share" class="control-btn" title="Condividi schermo">🖥️</button>
+      <button id="btn-record" class="control-btn host-only" title="Registra">⏺</button>
+      <button id="btn-settings" class="control-btn" title="Impostazioni">⚙️</button>
+    </div>
+    <div class="footer-nickname" id="footer-nickname" title="Clicca per modificare">
+      <span class="footer-nickname-label">Tu:</span>
+      <span class="footer-nickname-value" id="footer-nickname-value">—</span>
     </div>
     <div class="quality-indicator" id="quality-indicator">—</div>
   </footer>
