@@ -27,7 +27,7 @@ function setContext(userId, rId, sendFn) {
 async function getLocalStream(cameraId, microphoneId) {
   const constraints = {
     video: cameraId ? { deviceId: { exact: cameraId } } : true,
-    audio: microphoneId ? { deviceId: microphoneId ? { exact: microphoneId } : true } : true
+    audio: microphoneId ? { deviceId: { exact: microphoneId } } : true
   };
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   if (localStream) localStream.getTracks().forEach((t) => t.stop());

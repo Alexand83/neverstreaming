@@ -102,6 +102,12 @@ function onDrop(e) {
   newOrder[targetIndex] = a;
   stageOrder = newOrder.filter(Boolean);
   updateRoom(roomId, { stageOrder });
+  const fromSlot = videoGridEl.querySelector(`.video-slot[data-slot-index="${draggedIndex}"]`);
+  const toSlot = videoGridEl.querySelector(`.video-slot[data-slot-index="${targetIndex}"]`);
+  [fromSlot, toSlot].filter(Boolean).forEach((s) => {
+    s.classList.add('slot-just-moved');
+    setTimeout(() => s.classList.remove('slot-just-moved'), 450);
+  });
   if (onSlotDrop) onSlotDrop(stageOrder);
 }
 

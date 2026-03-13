@@ -43,6 +43,7 @@
         <button class="panel-tab active" data-panel="backstage">Backstage</button>
         <button class="panel-tab" data-panel="chat">Chat</button>
         <button class="panel-tab" data-panel="layout">Layout</button>
+        <button class="panel-tab" data-panel="settings">Impostazioni</button>
       </div>
       <div class="panel-content" id="panel-content">
         <div class="panel active" id="panel-backstage">
@@ -63,6 +64,18 @@
             <div class="layout-presets" id="layout-presets"></div>
             <h4>Scenes</h4>
             <div class="scene-buttons" id="scene-buttons"></div>
+          </div>
+        </div>
+        <div class="panel" id="panel-settings">
+          <div class="settings-panel" id="settings-panel">
+            <h4>Nome (nickname)</h4>
+            <input type="text" id="settings-nickname" placeholder="Il tuo nome" maxlength="32">
+            <h4>Webcam</h4>
+            <select id="settings-camera"></select>
+            <h4>Microfono</h4>
+            <select id="settings-microphone"></select>
+            <p class="settings-hint">L’eco si riduce usando cuffie. Il browser applica già riduzione rumore/eco dove supportato.</p>
+            <button type="button" id="settings-apply" class="btn btn-primary">Applica</button>
           </div>
         </div>
       </div>

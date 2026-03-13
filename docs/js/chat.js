@@ -13,6 +13,10 @@ function init(opt) {
   localName = opt.localName || 'Guest';
 }
 
+function setLocalName(name) {
+  localName = (name || 'Guest').trim().slice(0, 32);
+}
+
 function start(container) {
   const messagesEl = container.querySelector('.chat-messages');
   const input = container.querySelector('#chat-input');
@@ -45,4 +49,4 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
-export { init as initChat, start as startChat };
+export { init as initChat, start as startChat, setLocalName };

@@ -15,6 +15,7 @@ import {
   getLocalStream,
   getLocalStreamRef,
   getLocalVideoTrack,
+  getDevices,
   setCallbacks,
   setContext,
   createOfferFor,
@@ -33,7 +34,7 @@ import {
   renderBackstageList,
   getOnStageParticipants
 } from './participants.js';
-import { initChat, startChat } from './chat.js';
+import { initChat, startChat, setLocalName } from './chat.js';
 import { initDragLayout, setStageOrder as setDragStageOrder, renderSlots, setLayout } from './drag-layout.js';
 import { setElements as setScreenShareElements, startScreenShare, stopScreenShare } from './screen-share.js';
 import * as recording from './recording.js';
@@ -79,8 +80,25 @@ async function main() {
   getEl('room-badge').textContent = roomId;
   getEl('connection-status').textContent = 'Connecting…';
 
+  function attachBackstageStreams() {
+    const list = getEl('backstage-list');
+    if (!list) return;
+    list.querySelectorAll('[data-remote-preview]').forEach((video) => {
+      const userId = video.getAttribute('data-remote-preview');
+      const stream = remoteStreams.get(userId);
+      if (stream) {
+        video.srcObject = stream;
+        video.muted = true;
+      }
+    });
+  }
+
   setCallbacks(
-    (userId, stream) => { remoteStreams.set(userId, stream); refreshVideoGrid(); },
+    (userId, stream) => {
+      remoteStreams.set(userId, stream);
+      refreshVideoGrid();
+      attachBackstageStreams();
+    },
     (userId) => { remoteStreams.delete(userId); refreshVideoGrid(); }
   );
 
@@ -138,9 +156,16 @@ async function main() {
     setParticipantsStageOrder(roomData.stageOrder || []);
     renderBackstageList(getEl('backstage-list'), (uid) => createOfferFor(uid));
 
-    list.filter((p) => p.id !== localUserId && p.status === 'on_stage').forEach((p) => {
+    const onStageCount = list.filter((p) => p.status === 'on_stage').length;
+    const autoLayout = onStageCount <= 1 ? 1 : onStageCount <= 2 ? 2 : onStageCount <= 3 ? 3 : onStageCount <= 4 ? 4 : onStageCount <= 6 ? 6 : onStageCount <= 9 ? 9 : 12;
+    if (isHost && onStageCount > 0 && roomData.layout !== autoLayout) {
+      updateRoom(roomId, { layout: autoLayout });
+    }
+
+    list.filter((p) => p.id !== localUserId).forEach((p) => {
       createOfferFor(p.id);
     });
+    attachBackstageStreams();
 
     list.filter((p) => p.id !== localUserId).forEach((p) => {
       if (signalingUnsubs.has(p.id)) return;
@@ -154,6 +179,7 @@ async function main() {
     });
 
     refreshVideoGrid();
+    attachBackstageStreams();
   });
 
   initParticipants({ roomId, localUserId, isHost });
@@ -246,6 +272,64 @@ async function main() {
       if (track) replaceTrack('video', track);
     }
     getEl('vb-select').value = 'image';
+  });
+
+  async function populateSettingsPanel() {
+    const nickEl = getEl('settings-nickname');
+    const camEl = getEl('settings-camera');
+    const micEl = getEl('settings-microphone');
+    if (nickEl) nickEl.value = localName || '';
+    const { cameras, microphones } = await getDevices();
+    if (camEl) {
+      camEl.innerHTML = cameras.map((c) => `<option value="${c.deviceId}">${c.label || 'Webcam'}</option>`).join('');
+      const stream = getLocalStreamRef();
+      const curCam = stream && stream.getVideoTracks()[0] && stream.getVideoTracks()[0].getSettings().deviceId;
+      if (curCam) camEl.value = curCam;
+    }
+    if (micEl) {
+      micEl.innerHTML = microphones.map((m) => `<option value="${m.deviceId}">${m.label || 'Microfono'}</option>`).join('');
+      const stream = getLocalStreamRef();
+      const curMic = stream && stream.getAudioTracks()[0] && stream.getAudioTracks()[0].getSettings().deviceId;
+      if (curMic) micEl.value = curMic;
+    }
+  }
+
+  getEl('panel-tabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('.panel-tab');
+    if (!tab) return;
+    const panelId = tab.dataset.panel;
+    if (panelId === 'settings') populateSettingsPanel();
+  });
+
+  getEl('settings-apply').addEventListener('click', async () => {
+    const nickEl = getEl('settings-nickname');
+    const camEl = getEl('settings-camera');
+    const micEl = getEl('settings-microphone');
+    const newName = (nickEl && nickEl.value || '').trim().slice(0, 32) || 'Guest';
+    if (newName !== localName) {
+      localName = newName;
+      setLocalName(newName);
+      await setParticipant(roomId, localUserId, { name: newName });
+    }
+    const cameraId = (camEl && camEl.value) || null;
+    const microphoneId = (micEl && micEl.value) || null;
+    try {
+      const stream = await getLocalStream(cameraId, microphoneId);
+      replaceTrack('video', stream.getVideoTracks()[0]);
+      replaceTrack('audio', stream.getAudioTracks()[0]);
+      const vbSelect = getEl('vb-select');
+      if (vbSelect && vbSelect.value !== 'none') {
+        virtualBackground.setInputStream(stream);
+        const mode = vbSelect.value;
+        const out = mode === 'blur' ? await virtualBackground.setMode('blur') : null;
+        if (out && mode === 'blur') {
+          const track = virtualBackground.getOutputVideoTrack();
+          if (track) replaceTrack('video', track);
+        }
+      }
+    } catch (err) {
+      console.warn('Impostazioni dispositivi:', err);
+    }
   });
 
   const layoutPresets = getEl('layout-presets');
